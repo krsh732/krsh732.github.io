@@ -153,7 +153,7 @@ userspace_payload = asm(f"""
 For the kernel payload which runs when `printf_output` is called, we simply need to patch `this_core->current_process->user` to `root`'s user ID (0).
 Since `this_core` is [accessible via `gsbase`](https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L232) and `current_process` is the [first element in the struct](https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L172-L186), there's thankfully not much to do here:
 ```py
-# 28 is the offset for the `user` pointer within the `current_process`
+# 28 is the `user` field offset within `current_process`
 kernel_payload = asm("""
     mov rdi, gs:[0x0]
     mov QWORD PTR [rdi + 28], 0

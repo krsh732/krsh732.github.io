@@ -31,8 +31,8 @@ userspace_payload = asm(f"""
     {syscall(SYS_EXIT, 0)}
 """)
 
-# `this_core->current_process` is first entry[1] in gs[2] and 28 is the offset
-# for the `user` pointer within the current_process struct
+# `this_core->current_process` is the first entry[1] in gs[2] and 28 is the `user`
+# field offset within `current_process`
 # [1] https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L172
 # [2] https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L232
 # so the payload here just sets user to 0 (root)
